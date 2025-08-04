@@ -1,0 +1,25 @@
+apiVersion: orchestration.aibrix.ai/v1alpha1
+kind: StormService
+metadata:
+  name: test-model
+  namespace: default
+spec:
+  replicas: 1
+  rolesets:
+  - name: inference
+    replicas: 1
+    template:
+      spec:
+        containers:
+        - name: aibrix-runtime
+          image: aibrix/aibrix-runtime:latest
+          env:
+          - name: MODEL_NAME
+            value: deepseek-ai/deepseek-coder-6.7b-instruct
+          resources:
+            requests:
+              memory: 16Gi
+              nvidia.com/gpu: 1
+            limits:
+              memory: 16Gi
+              nvidia.com/gpu: 1 

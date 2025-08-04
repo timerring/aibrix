@@ -1,0 +1,18 @@
+apiVersion: orchestration.aibrix.ai/v1alpha1
+kind: StormService
+metadata:
+  name: test-model
+  # Missing namespace
+spec:
+  # Missing replicas
+  rolesets:
+  - name: inference
+    # Missing replicas
+    template:
+      spec:
+        containers:
+        - name: aibrix-runtime
+          # Missing image
+          env:
+          - name: MODEL_NAME
+            value: deepseek-ai/deepseek-coder-6.7b-instruct 

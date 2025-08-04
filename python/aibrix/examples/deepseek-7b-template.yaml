@@ -1,0 +1,33 @@
+apiVersion: orchestration.aibrix.ai/v1alpha1
+kind: StormService
+metadata:
+  name: {{ model_name }}
+  namespace: {{ namespace }}
+spec:
+  replicas: {{ replicas }}
+  rolesets:
+  - name: inference
+    replicas: {{ inference_replicas }}
+    template:
+      spec:
+        containers:
+        - name: aibrix-runtime
+          image: {{ image }}
+          env:
+          - name: MODEL_NAME
+            value: {{ model_uri }}
+          - name: INFERENCE_ENGINE
+            value: {{ inference_engine }}
+          - name: INFERENCE_ENGINE_ENDPOINT
+            value: {{ inference_engine_endpoint }}
+          resources:
+            requests:
+              memory: {{ memory_request }}
+              nvidia.com/gpu: {{ gpu_request }}
+            limits:
+              memory: {{ memory_limit }}
+              nvidia.com/gpu: {{ gpu_limit }}
+          ports:
+          - containerPort: 8080
+            name: http
+        restartPolicy: Always 

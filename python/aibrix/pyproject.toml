@@ -42,6 +42,7 @@ patterns = [
 ]
 
 [tool.poetry.scripts]
+aibrix = 'aibrix.cli.main:main'
 aibrix_runtime = 'aibrix.app:main'
 aibrix_download = 'aibrix.downloader.__main__:main'
 aibrix_benchmark = "aibrix.gpu_optimizer.optimizer.profiling.benchmark:main"

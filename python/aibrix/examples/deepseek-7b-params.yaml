@@ -1,0 +1,13 @@
+# Parameters for DeepSeek 7B model deployment
+model_name: deepseek-7b
+namespace: default
+replicas: 1
+inference_replicas: 1
+image: aibrix/aibrix-runtime:latest
+model_uri: deepseek-ai/deepseek-coder-6.7b-instruct
+inference_engine: vllm
+inference_engine_endpoint: http://localhost:8000
+memory_request: 16Gi
+memory_limit: 16Gi
+gpu_request: 1
+gpu_limit: 1 
