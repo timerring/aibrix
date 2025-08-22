@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -31,6 +30,7 @@ import (
 	"k8s.io/klog/v2"
 
 	prometheusv1 "github.com/prometheus/client_golang/api/prometheus/v1"
+	"github.com/vllm-project/aibrix/pkg/constants"
 	"github.com/vllm-project/aibrix/pkg/metrics"
 	"github.com/vllm-project/aibrix/pkg/utils"
 	syncindexer "github.com/vllm-project/aibrix/pkg/utils/syncprefixcacheindexer"
@@ -69,10 +69,11 @@ type Store struct {
 	modelRouterProvider ModelRouterProviderFunc // Function to get model router
 
 	// Metrics related fields
-	subscribers         []metrics.MetricSubscriber // List of metric subscribers
-	metrics             map[string]any             // Generic metric storage
-	pendingLoadProvider CappedLoadProvider         // Provider that defines load in terms of pending requests.
-	numRequestsTraces   int32                      // Request trace counter
+	subscribers          []metrics.MetricSubscriber    // List of metric subscribers
+	metrics              map[string]any                // Generic metric storage
+	pendingLoadProvider  CappedLoadProvider            // Provider that defines load in terms of pending requests.
+	numRequestsTraces    int32                         // Request trace counter
+	engineMetricsFetcher *metrics.EngineMetricsFetcher // Centralized typed metrics fetcher
 
 	// Request trace fields
 	enableTracing bool                                  // Default to load from enableGPUOptimizerTracing, can be configured.
@@ -137,7 +138,8 @@ func New(redisClient *redis.Client, prometheusApi prometheusv1.API, modelRouterP
 		requestTrace:          &utils.SyncMap[string, *RequestTrace]{},
 		modelRouterProvider:   modelRouterProvider,
 		podMetricsWorkerCount: defaultPodMetricsWorkerCount,
-		podMetricsJobs:        make(chan *Pod, 100), // Initialize the job channel with a buffer size of 100
+		podMetricsJobs:        make(chan *Pod, 100),              // Initialize the job channel with a buffer size of 100
+		engineMetricsFetcher:  metrics.NewEngineMetricsFetcher(), // Initialize centralized typed metrics fetcher
 		enableProfileCaching:  enableModelGPUProfileCaching,
 	}
 
@@ -155,6 +157,7 @@ func NewForTest() *Store {
 		initialized:          true,
 		enableTracing:        enableGPUOptimizerTracing,
 		enableProfileCaching: enableModelGPUProfileCaching,
+		engineMetricsFetcher: metrics.NewEngineMetricsFetcher(), // Initialize centralized typed metrics fetcher
 	}
 	if store.enableTracing {
 		store.requestTrace = &utils.SyncMap[string, *RequestTrace]{}
@@ -431,10 +434,8 @@ func (s *Store) initKVEventSync() error {
 	klog.Info("Initializing KV event synchronization")
 
 	// Check if KV sync should be enabled
-	kvSyncValue := utils.LoadEnv("AIBRIX_KV_EVENT_SYNC_ENABLED", "false")
-	kvSyncEnabled, _ := strconv.ParseBool(kvSyncValue)
-	remoteTokenValue := utils.LoadEnv("AIBRIX_USE_REMOTE_TOKENIZER", "false")
-	remoteTokenizerEnabled, _ := strconv.ParseBool(remoteTokenValue)
+	kvSyncEnabled := utils.LoadEnvBool(constants.EnvPrefixCacheKVEventSyncEnabled, false)
+	remoteTokenizerEnabled := utils.LoadEnvBool(constants.EnvPrefixCacheUseRemoteTokenizer, false)
 
 	// Early return if not enabled
 	if !kvSyncEnabled {
