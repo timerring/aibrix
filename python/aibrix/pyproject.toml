@@ -42,6 +42,7 @@ patterns = [
 ]
 
 [tool.poetry.scripts]
+aibrix = 'aibrix.cli.main:main'
 aibrix_runtime = 'aibrix.app:main'
 aibrix_download = 'aibrix.downloader.__main__:main'
 aibrix_benchmark = "aibrix.gpu_optimizer.optimizer.profiling.benchmark:main"
@@ -72,6 +73,7 @@ matplotlib = "^3.9.2"
 filelock = "^3.16.1"
 tiktoken = "^0.7.0"
 transformers = ">=4.38.0"
+pyyaml = "^6.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "1.11.1"

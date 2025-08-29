@@ -2,12 +2,33 @@
 A versatile sidecar enabling metric standardization, model downloading, and management.
 
 ## Quick Start
+
 ### Installation
-AI Runtime can be installed by `pip`.
+AIBrix can be installed by `pip`.
 
 ```sh
 pip install aibrix
 ```
+
+### AIBrix CLI
+AIBrix includes an advanced CLI for managing AI/ML workloads on Kubernetes:
+
+```sh
+# Deploy a model quickly
+aibrix deploy --template quickstart \
+  --params model_name=my-llama model_path=meta-llama/Llama-2-7b-chat-hf
+
+# List workloads
+aibrix list deployments
+
+# Scale workloads
+aibrix scale --workload my-llama --replicas 3
+
+# View logs
+aibrix logs --workload my-llama --tail 100
+```
+
+For detailed CLI usage, see [CLI Usage Guide](CLI_USAGE_GUIDE.md) and [Quick Reference](CLI_QUICK_REFERENCE.md).
 
 ### Model download
 The AI Runtime supports model downloading from the following storage backends:
